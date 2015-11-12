@@ -10,47 +10,69 @@
 #import "UIImageView+WebCache.h"
 #define Width  self.frame.size.width
 #define Height self.frame.size.height
+
+@interface LBAutoDisplayScrollView()
+@property (strong, nonatomic) UIPageControl*  pageControl;
+@property (strong, nonatomic) UIScrollView*   scrollView;
+@property (strong, nonatomic) NSMutableArray* imageViewArr;
+@property (strong, nonatomic) NSMutableArray* labelArr;
+@end
+
 @implementation LBAutoDisplayScrollView
 {
-    __weak UIScrollView* _scrollView;
     NSTimer* _timer;
 }
 
-// 从xib初始化 走这个方法
-- (id)initWithCoder:(NSCoder *)aDecoder {
-    if (self=[super initWithCoder:aDecoder]) {
-        //初始化并添加一个scrollView
-        UIScrollView* scrollView =[[UIScrollView alloc]initWithFrame:self.bounds];
-        scrollView.delegate=self;
-        _scrollView=scrollView;
-        [self addSubview:_scrollView];
-        
-        //创建并设置PageControl
-        UIPageControl* pageControl= [[UIPageControl alloc]init];
-        pageControl.center=CGPointMake(0.5*Width, 0.9*Height);
-        pageControl.currentPageIndicatorTintColor=[UIColor whiteColor];
-        pageControl.currentPage=0;
-        
-        _pageControl=pageControl;
-        [self addSubview:pageControl];
-        
-        //默认的方向是右
-        _AutoScrollDirection=LBScrollDirectionRight;
-        
+// 懒加载
+- (NSMutableArray *)imageViewArr {
+    if (_imageViewArr == nil) {
+        _imageViewArr = [NSMutableArray array];
     }
-    return self;
- }
+    return _imageViewArr;
+}
+
+- (NSMutableArray *)labelArr {
+    if (_labelArr == nil) {
+        _labelArr = [NSMutableArray array];
+    }
+    return _labelArr;
+}
+
+// 从xib初始化 走这个方法
+//- (id)initWithCoder:(NSCoder *)aDecoder {
+//    if (self=[super initWithCoder:aDecoder]) {
+//        //初始化并添加一个scrollView
+//        UIScrollView* scrollView =[[UIScrollView alloc]initWithFrame:self.bounds];
+//        scrollView.delegate=self;
+//        self.scrollView = scrollView;
+//        [self addSubview:_scrollView];
+//        
+//        //创建并设置PageControl
+//        UIPageControl* pageControl = [[UIPageControl alloc]init];
+//        pageControl.center = CGPointMake(0.5*Width, 0.9*Height);
+//        pageControl.currentPageIndicatorTintColor = [UIColor whiteColor];
+//        pageControl.currentPage = 0;
+//        
+//        self.pageControl = pageControl;
+//        [self addSubview:pageControl];
+//        
+//        //默认的方向是右
+//        _AutoScrollDirection=LBScrollDirectionRight;
+//        
+//    }
+//    return self;
+// }
 
 // 手码初始化 走这个方法
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self=[super initWithFrame:frame]) {
-        //初始化并添加一个scrollView
+        // 初始化并添加一个scrollView
         UIScrollView* scrollView =[[UIScrollView alloc]initWithFrame:self.bounds];
         scrollView.delegate=self;
         _scrollView=scrollView;
         [self addSubview:_scrollView];
         
-        //创建并设置PageControl
+        // 创建并设置PageControl
         UIPageControl* pageControl= [[UIPageControl alloc]init];
         pageControl.center=CGPointMake(0.5*Width, 0.9*Height);
         pageControl.currentPageIndicatorTintColor=[UIColor whiteColor];
@@ -59,8 +81,11 @@
         _pageControl=pageControl;
         [self addSubview:pageControl];
         
-        //默认的方向是右
-        _AutoScrollDirection=LBScrollDirectionRight;
+        // 默认的方向是右
+        self.AutoScrollDirection = LBScrollDirectionRight;
+        self.font = [UIFont systemFontOfSize:13];
+        self.textColor = [UIColor whiteColor];
+        self.textBackgroundColor = [UIColor colorWithWhite:0 alpha:0.5];
     }
     return self;
 }
@@ -116,6 +141,9 @@
         imageView.tag=idx;
         [_scrollView addSubview:imageView];
         
+        // 添加到imageView数组里去
+        [self.imageViewArr addObject:imageView];
+        
         //创建并添加手势
         UITapGestureRecognizer* tap=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(imageViewClicked:)];
         [imageView addGestureRecognizer:tap];
@@ -135,6 +163,10 @@
     [_scrollView addSubview:imageView];
     [_scrollView addSubview:imageView1];
     
+    // 添加到imageView数组里去
+    [self.imageViewArr addObject:imageView];
+    [self.imageViewArr addObject:imageView1];
+    
     //设置其余属性
     _scrollView.pagingEnabled=YES;
     _scrollView.showsHorizontalScrollIndicator=NO;
@@ -151,13 +183,16 @@
     _scrollView.contentOffset=CGPointMake(Width, 0);
     
     
-    //前后各贴两张图
-    UIImageView* imageView1=[[UIImageView alloc]initWithFrame:CGRectMake(0, 0, Width, Height)];
+    //前后各贴两张图 并添加进数组
+    UIImageView* imageView1 = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, Width, Height)];
     
-    UIImageView* imageView2=[[UIImageView alloc]initWithFrame:CGRectMake((imageURLs.count+1)*Width, 0, Width, Height)];
+    UIImageView* imageView2 = [[UIImageView alloc]initWithFrame:CGRectMake((imageURLs.count+1)*Width, 0, Width, Height)];
     
     imageView1.image=_imageHolder;
     imageView2.image=_imageHolder;
+    
+    [self.imageViewArr addObject:imageView1];
+    [self.imageViewArr addObject:imageView2];
     
     [_scrollView addSubview:imageView1];
     [_scrollView addSubview:imageView2];
@@ -165,9 +200,9 @@
     //创建imageView 创建并添加手势
     [imageURLs  enumerateObjectsUsingBlock:^(NSString* obj, NSUInteger idx, BOOL *stop) {
         //创建imageView
-        UIImageView* imageView=[[UIImageView alloc]init];
-        imageView.frame=CGRectMake((idx+1)*Width, 0, Width, Height);
-        imageView.tag=idx;
+        UIImageView* imageView = [[UIImageView alloc]init];
+        imageView.frame = CGRectMake((idx+1)*Width, 0, Width, Height);
+        imageView.tag = idx;
         imageView.userInteractionEnabled=YES;
         [imageView sd_setImageWithURL:[NSURL URLWithString:obj]
                      placeholderImage:_imageHolder
@@ -185,6 +220,8 @@
         UITapGestureRecognizer* tap=[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(imageViewClicked:)];
         [imageView addGestureRecognizer:tap];
         
+        [self.imageViewArr addObject:imageView];
+        
     }];
     
     //设置其余属性
@@ -195,10 +232,87 @@
     _pageControl.numberOfPages=imageURLs.count;
 }
 
+// 给新闻图片添加标题
+- (void)setTexts:(NSArray *)texts {
+    _texts = texts;
+    
+    // 首先 先创建label
+    for (NSString* text in texts) {
+        UILabel* label = [[UILabel alloc]init];
+        
+        label.font = self.font;
+        label.textColor = self.textColor;
+        label.backgroundColor = self.textBackgroundColor;
+        label.numberOfLines = 0;
+        label.lineBreakMode = NSLineBreakByWordWrapping;
+        label.preferredMaxLayoutWidth = Width;
+        label.text = text;
+        label.frame = CGRectMake(0, Height-label.intrinsicContentSize.height, Width, label.intrinsicContentSize.height);
+        
+        
+        NSLog(@"label.intrinsicContentSize:%@",NSStringFromCGSize(label.intrinsicContentSize));
+        NSLog(@"label.frame:%@",NSStringFromCGRect(label.frame));
+        
+        
+        [self.labelArr addObject:label];
+    }
+    
+    // 然后 给每个imageView添加label
+    for (UIImageView* imageView in self.imageViewArr) {
+        int index = imageView.frame.origin.x/Width;
+        if (index == 0) {
+            UILabel* label = [[UILabel alloc]init];
+            
+            label.font = self.font;
+            label.textColor = self.textColor;
+            label.backgroundColor = self.textBackgroundColor;
+            label.numberOfLines = 0;
+            label.lineBreakMode = NSLineBreakByWordWrapping;
+            label.preferredMaxLayoutWidth = Width;
+            label.text = [texts lastObject];
+            
+            label.frame = CGRectMake(0, Height-label.intrinsicContentSize.height, Width, label.intrinsicContentSize.height);
+            
+            [imageView addSubview:label];
+        }else if (index == self.imageViewArr.count-1) {
+            UILabel* label = [[UILabel alloc]init];
+            
+            label.font = self.font;
+            label.textColor = self.textColor;
+            label.backgroundColor = self.textBackgroundColor;
+            label.numberOfLines = 0;
+            label.lineBreakMode = NSLineBreakByWordWrapping;
+            label.preferredMaxLayoutWidth = Width;
+            label.text = [texts firstObject];
+            
+            label.frame = CGRectMake(0, Height-label.intrinsicContentSize.height, Width, label.intrinsicContentSize.height);
+            
+            [imageView addSubview:label];
+        }else {
+            [imageView addSubview:self.labelArr[index-1]];
+        }
+    }
+}
+
+
+
 - (void)imageViewClicked:(UIGestureRecognizer*)sender {
     
     [_delegate imageClickedWithIndex:sender.view.tag];
 }
+
+// pageControl位置设置方法
+- (void)setPageControlCenter:(CGPoint)pageControlCenter {
+    _pageControlCenter = pageControlCenter;
+    [_pageControl setCenter:pageControlCenter];
+    [self setNeedsLayout];
+}
+
+// pageControl设置方法
+- (void)setCurrentPageIndicatorTintColor:(UIColor *)currentPageIndicatorTintColor {
+    _pageControl.currentPageIndicatorTintColor = currentPageIndicatorTintColor;
+}
+
 
 - (void)dealloc {
     if (_timer) {
