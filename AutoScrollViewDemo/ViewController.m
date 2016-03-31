@@ -29,6 +29,8 @@
     autoDisplayScrollView.imageHolder=[UIImage imageNamed:@"bg"];
     autoDisplayScrollView.interval=5;
     autoDisplayScrollView.duration=2;
+    autoDisplayScrollView.textHorizontalInset = 30;
+    autoDisplayScrollView.textVerticalInset = 30;
     autoDisplayScrollView.texts = @[@"哈地方可垃圾房地哦啊见佛啊就饿哦附近进来撒大家佛啊佛啊的佛啊打击偶发房间哦啊见佛iII代搜集发哦",@"哈地方可垃圾房地",@"哈地方可垃圾房地哦啊见佛啊就饿哦附近",@"哈地方可垃圾房地哦啊见佛啊就饿哦附发生地偶发噢IFA叫法第四佛啊近"];
     
 //    autoDisplayScrollView.AutoScrollDirection=LBScrollDirectionLeft;

@@ -49,6 +49,10 @@ typedef enum {
 @property (nonatomic, strong) UIColor* currentPageIndicatorTintColor;
 
 #pragma mark - 设置文字的属性
+/** 水平方向上的间隔(默认是5) */
+@property (nonatomic, assign) CGFloat textHorizontalInset;
+/** 垂直方向上的间隔（默认是5） */
+@property (nonatomic, assign) CGFloat textVerticalInset;
 /** 图片下的文字 字符串数组 */
 @property (nonatomic, strong) NSArray* texts;
 /** 文字的字体 默认是系统字体13号 */

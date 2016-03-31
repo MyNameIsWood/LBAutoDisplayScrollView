@@ -86,6 +86,8 @@
         self.font = [UIFont systemFontOfSize:13];
         self.textColor = [UIColor whiteColor];
         self.textBackgroundColor = [UIColor colorWithWhite:0 alpha:0.5];
+        self.textHorizontalInset = 5;
+        self.textVerticalInset = 5;
     }
     return self;
 }
@@ -128,6 +130,13 @@
 //本地图片
 - (void)setImageNames:(NSArray *)imageNames {
     _imageNames=imageNames;
+    
+    // 清除
+    for (UIImageView* imageView in self.imageViewArr) {
+        [imageView removeFromSuperview];
+    }
+    self.imageViewArr = nil;
+    
     //设置contentSize
     _scrollView.contentSize=CGSizeMake((imageNames.count+2)*Width, Height);
     _scrollView.contentOffset=CGPointMake(Width, 0);
@@ -178,6 +187,13 @@
 //网络图片
 - (void)setImageURLs:(NSArray *)imageURLs {
     _imageURLs=imageURLs;
+    
+    // 清除
+    for (UIImageView* imageView in self.imageViewArr) {
+        [imageView removeFromSuperview];
+    }
+    self.imageViewArr = nil;
+    
     //设置contentSize
     _scrollView.contentSize=CGSizeMake((imageURLs.count+2)*Width, Height);
     _scrollView.contentOffset=CGPointMake(Width, 0);
@@ -236,25 +252,34 @@
 - (void)setTexts:(NSArray *)texts {
     _texts = texts;
     
+    // 清除
+    for (UIView* view in self.labelArr) {
+        [view removeFromSuperview];
+    }
+    self.labelArr = nil;
+    
     // 首先 先创建label
     for (NSString* text in texts) {
         UILabel* label = [[UILabel alloc]init];
         
         label.font = self.font;
         label.textColor = self.textColor;
-        label.backgroundColor = self.textBackgroundColor;
+        label.backgroundColor = [UIColor clearColor];
         label.numberOfLines = 0;
         label.lineBreakMode = NSLineBreakByWordWrapping;
-        label.preferredMaxLayoutWidth = Width;
+        label.preferredMaxLayoutWidth = Width-2*self.textHorizontalInset;
         label.text = text;
-        label.frame = CGRectMake(0, Height-label.intrinsicContentSize.height, Width, label.intrinsicContentSize.height);
+        
+        UIView* labelView = [[UIView alloc] initWithFrame:CGRectMake(0, Height-label.intrinsicContentSize.height-2*self.textVerticalInset, Width, label.intrinsicContentSize.height+2*self.textVerticalInset)];
+        labelView.backgroundColor = self.textBackgroundColor;
+        label.frame = CGRectMake(self.textHorizontalInset, self.textVerticalInset, Width-2*self.textHorizontalInset, label.intrinsicContentSize.height);
+        [labelView addSubview:label];
+        
+//        NSLog(@"label.intrinsicContentSize:%@",NSStringFromCGSize(label.intrinsicContentSize));
+//        NSLog(@"label.frame:%@",NSStringFromCGRect(label.frame));
         
         
-        NSLog(@"label.intrinsicContentSize:%@",NSStringFromCGSize(label.intrinsicContentSize));
-        NSLog(@"label.frame:%@",NSStringFromCGRect(label.frame));
-        
-        
-        [self.labelArr addObject:label];
+        [self.labelArr addObject:labelView];
     }
     
     // 然后 给每个imageView添加label
@@ -265,29 +290,38 @@
             
             label.font = self.font;
             label.textColor = self.textColor;
-            label.backgroundColor = self.textBackgroundColor;
+            label.backgroundColor = [UIColor clearColor];
             label.numberOfLines = 0;
             label.lineBreakMode = NSLineBreakByWordWrapping;
-            label.preferredMaxLayoutWidth = Width;
+            label.preferredMaxLayoutWidth = Width - 2*self.textHorizontalInset;
             label.text = [texts lastObject];
             
-            label.frame = CGRectMake(0, Height-label.intrinsicContentSize.height, Width, label.intrinsicContentSize.height);
+            UIView* labelView = [[UIView alloc] initWithFrame:CGRectMake(0, Height-label.intrinsicContentSize.height-2*self.textVerticalInset, Width, label.intrinsicContentSize.height+2*self.textVerticalInset)];
+            labelView.backgroundColor = self.textBackgroundColor;
+            label.frame = CGRectMake(self.textHorizontalInset, self.textVerticalInset, Width-2*self.textHorizontalInset, label.intrinsicContentSize.height);
+            [labelView addSubview:label];
             
-            [imageView addSubview:label];
+            [self.labelArr addObject:labelView];
+            [imageView addSubview:labelView];
+            
         }else if (index == self.imageViewArr.count-1) {
             UILabel* label = [[UILabel alloc]init];
             
             label.font = self.font;
             label.textColor = self.textColor;
-            label.backgroundColor = self.textBackgroundColor;
+            label.backgroundColor = [UIColor clearColor];
             label.numberOfLines = 0;
             label.lineBreakMode = NSLineBreakByWordWrapping;
-            label.preferredMaxLayoutWidth = Width;
+            label.preferredMaxLayoutWidth = Width - 2*self.textHorizontalInset;
             label.text = [texts firstObject];
             
-            label.frame = CGRectMake(0, Height-label.intrinsicContentSize.height, Width, label.intrinsicContentSize.height);
+            UIView* labelView = [[UIView alloc] initWithFrame:CGRectMake(0, Height-label.intrinsicContentSize.height-2*self.textVerticalInset, Width, label.intrinsicContentSize.height+2*self.textVerticalInset)];
+            labelView.backgroundColor = self.textBackgroundColor;
+            label.frame = CGRectMake(self.textHorizontalInset, self.textVerticalInset, Width-2*self.textHorizontalInset, label.intrinsicContentSize.height);
+            [labelView addSubview:label];
             
-            [imageView addSubview:label];
+            [self.labelArr addObject:labelView];
+            [imageView addSubview:labelView];
         }else {
             [imageView addSubview:self.labelArr[index-1]];
         }
